@@ -1,0 +1,65 @@
+#Preliminary:
+	
+1. Open Git Repo on Git Blit
+2. Open Puppet Console: Filter: ap_app_env is prod
+3. Connect to  Puppet Master
+4. Connect to Development box
+5. Refresh local repo. 
+
+#Puppet Master - Disable Puppet Agent Across PROD
+
+1. Login adm
+2. sudo bash
+3. su - peadmin
+4. Get Status: mco puppet status -F "ap_app_env=prod"
+5. Disable all Agents: mco puppet disable -F "ap_app_env=prod"
+
+#Development Box: Merge Puppet Code from TEST to PROD under adm account
+
+1. Change dir: source/blah-puppet
+2. git checkout prod 
+3. git pull
+4. git merge --no-ff origin/test
+5. You'll receive commit message: Add change number
+6. o to open file 
+7. Type: "Weekly merge to Change and CHG0079855"
+8. esc :wq
+9. git push
+	
+#Puppet Master: Test Run on Single Box
+
+1. Enable Agent:
+	mco puppet enable -I "apltjumph02.corp.blah.local"
+2. Do Puppet Run on one box:
+	mco puppet runonce -I "apltjumph02.corp.blah.local"
+3. Check Status: 
+	mco puppet status -F "apltjumph02.corp.blah.local"	
+	
+4. If successful on this box, decide on the scope of deployment for the rest. Could be by Application Group, or Network segment as per below. 
+Watch the console for any issues. Confirm with code owner if required.
+a. Log onto Puppet console and go to reports. 
+b. Check on the server (node) that you deployed the code to. 
+	
+5. Enable the agent on segment a:
+	mco puppet enable -S 'fact("ec2_metadata.placement.availability-zone").value=ap-southeast-2a' -F "ap_app_env=prod"
+6. Run puppet on segment a:
+	mco puppet runonce -S 'fact("ec2_metadata.placement.availability-zone").value=ap-southeast-2a' -F "ap_app_env=prod"
+7. If successful,  run on segment b.
+8. Enable the agent on b:
+	mco puppet enable -S 'fact("ec2_metadata.placement.availability-zone").value=ap-southeast-2b' -F "ap_app_env=prod"
+9. Run puppet on segment b:
+	mco puppet runonce -S 'fact("ec2_metadata.placement.availability-zone").value=ap-southeast-2b' -F "ap_app_env=prod"
+
+Puppet run on entire site. 
+1. To enable on the entire site:  mco puppet enable -F "ap_app_env=prod"
+2. To run on entire site: mco puppet runonce -F "ap_app_env=prod"
+		
+Dev Box: Update Tags
+
+1. git checkout prod
+2. git tag -m "Change CHG0074744" CHG0074744
+3. git push --tags 
+
+
+
+
