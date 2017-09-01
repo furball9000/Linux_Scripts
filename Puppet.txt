@@ -18,3 +18,15 @@ vim Puppetfile
 git commit -a -m "netbackup: Use version 0.0.16"
 git push
 
+#Dev Box: Merge Puppet Code from DEV to TEST
+Change dir: source/repo
+git checkout test 
+git pull
+git merge --no-ff origin/dev	
+#You'll receive commit message: Add details about merge
+o to open file 
+Type: "Merge DEV to TEST: Netbackup Version Increment"
+esc :wq
+git push
+
+
